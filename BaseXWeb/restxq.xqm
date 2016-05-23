@@ -309,6 +309,21 @@ declare
 
 
 (:~
+ : Launch backups
+ :)
+declare
+  %updating
+  %rest:path("backup")
+  %rest:GET
+  function page:backup()
+
+{
+  db:create-backup('geokrety'),
+  db:create-backup('geokrety-details')
+} ;
+
+
+(:~
  : Alias to get geokrety document
  : @param $gkid to lookup
  : @return The gk document
