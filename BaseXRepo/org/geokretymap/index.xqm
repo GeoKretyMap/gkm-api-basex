@@ -652,7 +652,7 @@ declare
 declare
  %updating
  function gkm:merge_geokrety() {
-   let $gks := doc("pending-geokrety")/gkxml/geokrety/geokret[@date]
+   let $gks := subsequence(doc("pending-geokrety")/gkxml/geokrety/geokret[@date], 1, 30)
    return (
      db:output("Merging " || count($gks) || " GeoKrety"),
      db:output(""),
