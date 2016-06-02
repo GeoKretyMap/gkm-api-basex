@@ -331,10 +331,10 @@ declare
 declare
   %rest:path("/geojson")
   %rest:GET
-  %rest:query-param("latTL", "{$latTL}", "45.4601")
-  %rest:query-param("lonTL", "{$lonTL}", "15.5236")
-  %rest:query-param("lonBR", "{$lonBR}", "-4.6362")
-  %rest:query-param("latBR", "{$latBR}", "41.4509")
+  %rest:query-param("latTL", "{$latTL}", 45.4601)
+  %rest:query-param("lonTL", "{$lonTL}", 15.5236)
+  %rest:query-param("lonBR", "{$lonBR}", -4.6362)
+  %rest:query-param("latBR", "{$latBR}", 41.4509)
 
   %rest:query-param("newer", "{$newer}", "false")
   %rest:query-param("older", "{$older}", "false")
