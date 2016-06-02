@@ -1111,13 +1111,13 @@ let $filter1 := if ($missing)
 let $filter2 := if ($ghosts)
                 then $filter1[not(@state="0" or @state="3")]
                 else $filter1[    @state="0" or @state="3" ]
-(:
+
 let $filter3 := if (not($nodate) and not($older) ) then $filter2[              ($dateFrom >= @date and @date >= $dateTo)]
            else if (not($nodate) and     $older  ) then $filter2[               $dateFrom >= @date]
            else if (    $nodate  and not($older) ) then $filter2[not(@date) or ($dateFrom >= @date and @date >= $dateTo)]
            else if (    $nodate  and     $older  ) then $filter2[not(@date) or  $dateFrom >= @date]
            else $filter2
-:)
+
 let $filter3 := $filter2
 
 let $result := if ($latTL castable as xs:float and $lonTL castable as xs:float
