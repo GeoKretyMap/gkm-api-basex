@@ -746,15 +746,21 @@ declare
        let $missing := if ($geokret_details/owner/missing = "1") then "1" else "0"
        let $ownername := $geokret_details/owner/string()
        return (
+   db:output("fetched: " || $geokret/@id || " -> " || $geokret_details/@id),
+   db:output(""),
          gkm:insert_or_replace_geokrety_details($geokret_details),
          gkm:update_date_in_geokrety($geokret, $last_move),
          gkm:update_missing_in_geokrety($geokret, $missing),
          gkm:update_ownername_in_geokrety($geokret, $ownername)
        )
      } catch * {
+   db:output("Mark as failing: " || $geokret/@id),
        gkm:mark_geokrety_as_failing($geokret)
      }
-   else ()
+   else (
+   db:output("Failed to fetch: " || $geokret/@id),
+   db:output("")
+   )
 };
 
 
@@ -788,6 +794,7 @@ declare
      db:output(""),
      for $geokret in $gks
        return (
+       gkm:write_geokrety_details($geokret),
        delete node doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
        insert node $geokret as last into doc("geokrety-details")/gkxml/geokrety,
        delete node $geokret
@@ -808,6 +815,23 @@ declare
       delete node doc("pending-geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
       insert node $geokret as last into doc("pending-geokrety-details")/gkxml/geokrety
     )
+};
+
+
+(:~
+ : Write GK details to a file
+ : @param $geokret to write
+ :)
+declare
+ %updating
+ function gkm:write_geokrety_details($geokrets as element(geokret)*) {
+  for $geokret in $geokrets
+    return 
+      file:write(
+        "/srv/BaseXData/gkfiles/" || $geokret/@id || ".xml",
+        gkm:wrap_response($geokret),
+        map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"}
+      )
 };
 
 (:
@@ -1080,19 +1104,21 @@ let $input   := if ($details)
                 then doc("geokrety-details")/gkxml/geokrety/geokret
                 else doc("geokrety")/gkxml/geokrety/geokret
 
-let $filter1 := if (not($nodate) and not($older) ) then $input[              ($dateFrom >= @date and @date >= $dateTo)]
-           else if (not($nodate) and     $older  ) then $input[               $dateFrom >= @date]
-           else if (    $nodate  and not($older) ) then $input[not(@date) or ($dateFrom >= @date and @date >= $dateTo)]
-           else if (    $nodate  and     $older  ) then $input[not(@date) or  $dateFrom >= @date]
-           else $input
+let $filter1 := if ($missing)
+                then $input[@missing="1"]
+                else $input
 
 let $filter2 := if ($ghosts)
                 then $filter1[not(@state="0" or @state="3")]
                 else $filter1[    @state="0" or @state="3" ]
-
-let $filter3 := if ($missing)
-                then $filter2[@missing="1"]
-                else $filter2
+(:
+let $filter3 := if (not($nodate) and not($older) ) then $filter2[              ($dateFrom >= @date and @date >= $dateTo)]
+           else if (not($nodate) and     $older  ) then $filter2[               $dateFrom >= @date]
+           else if (    $nodate  and not($older) ) then $filter2[not(@date) or ($dateFrom >= @date and @date >= $dateTo)]
+           else if (    $nodate  and     $older  ) then $filter2[not(@date) or  $dateFrom >= @date]
+           else $filter2
+:)
+let $filter3 := $filter2
 
 let $result := if ($latTL castable as xs:float and $lonTL castable as xs:float
                and $latBR castable as xs:float and $lonBR castable as xs:float)
