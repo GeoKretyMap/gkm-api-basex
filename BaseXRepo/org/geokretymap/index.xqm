@@ -1078,17 +1078,17 @@ function gkm:as_geojson(
  $latBR as xs:float,
  $lonBR as xs:float,
 
- $newer as xs:boolean,
- $older as xs:boolean,
- $nodate as xs:boolean,
- $ghosts as xs:boolean,
- $missing as xs:boolean,
- $details as xs:boolean,
-
  $daysFrom as xs:integer,
  $daysTo as xs:integer,
 
- $limit as xs:integer
+ $limit as xs:integer,
+
+ $newer as xs:boolean?,
+ $older as xs:boolean?,
+ $nodate as xs:boolean?,
+ $ghosts as xs:boolean?,
+ $missing as xs:boolean?,
+ $details as xs:boolean?
 
  ) {
 
@@ -1097,33 +1097,34 @@ let $month := month-from-date(current-date())
 let $day := day-from-date(current-date())
 let $today := functx:date($year, $month, $day)
 
-let $dateFrom := current-date() - functx:dayTimeDuration($daysFrom, 0, 0, 0)
-let $dateTo   := current-date() - functx:dayTimeDuration($daysTo  , 0, 0, 0)
+let $dateFrom := xs:string(current-date() - functx:dayTimeDuration($daysFrom, 0, 0, 0))
+let $dateTo   := xs:string(current-date() - functx:dayTimeDuration($daysTo  , 0, 0, 0))
 
-let $input   := if ($details)
-                then doc("geokrety-details")/gkxml/geokrety/geokret
-                else doc("geokrety")/gkxml/geokrety/geokret
+let $input   := doc("geokrety")/gkxml/geokrety/geokret
 
 let $filter1 := if ($missing)
                 then $input[@missing="1"]
                 else $input
 
-let $filter2 := if ($ghosts)
-                then $filter1[not(@state="0" or @state="3")]
-                else $filter1[    @state="0" or @state="3" ]
+let $filter2 := if ($nodate) then $filter1 else $filter1[@date]
 
-let $filter3 := if (not($nodate) and not($older) ) then $filter2[              ($dateFrom >= @date and @date >= $dateTo)]
-           else if (not($nodate) and     $older  ) then $filter2[               $dateFrom >= @date]
-           else if (    $nodate  and not($older) ) then $filter2[not(@date) or ($dateFrom >= @date and @date >= $dateTo)]
-           else if (    $nodate  and     $older  ) then $filter2[not(@date) or  $dateFrom >= @date]
-           else $filter2
+let $filter3 := if ($ghosts)
+                then $filter2[not(@state="0" or @state="3")]
+                else $filter2[    @state="0" or @state="3" ]
 
-let $filter3 := $filter2
+let $filter4 := if ($daysFrom = 0)
+                then $filter3
+                else $filter3[$dateFrom >= @date]
 
-let $result := if ($latTL castable as xs:float and $lonTL castable as xs:float
-               and $latBR castable as xs:float and $lonBR castable as xs:float)
-               then $filter3[xs:float(@lat) <= xs:float($latTL) and xs:float(@lon) <= xs:float($lonTL) and xs:float(@lat) >= xs:float($latBR) and xs:float(@lon) >= xs:float($lonBR)]
-               else "<error>'latTL/lonTL/latBR/lonBR' has an invalid type</error>"
+let $filter5 := if ($older)
+                then $filter4
+                else $filter4[@date >= $dateTo]
+
+let $result := $filter5[xs:float(@lat) <= $latTL
+                    and xs:float(@lon) <= $lonTL
+                    and xs:float(@lat) >= $latBR
+                    and xs:float(@lon) >= $lonBR]
+
 (:
 {
    "type":"FeatureCollection",
@@ -1163,20 +1164,38 @@ json:serialize(
       </geometry>
       <type>Feature</type>
       <properties type="object">
-        <popupContent>{
-'<h1' || (if ($a/@missing = '1') then ' class="missing"' else '') || '><a href="https://geokretymap.org/' || $a/@id || '" target="_blank">' || $a/data() || '</a></h1>' ||
-string(if ($a/@waypoint) then (if ($a/not(@state="0" or @state="3")) then 'Last seen in' else 'In') || ' <a href="https://geokrety.org/go2geo/index.php?wpt=' || $a/@waypoint || '" target="_blank">' || $a/@waypoint || '</a><br />' else '') ||
-string(if ($a/@date) then 'Last move: ' || $a/@date || '<br />' else '') ||
-'Travelled: ' || $a/@dist || ' km<br />' ||
-string(if ($a/@image) then '<img src="https://geokretymap.org/gkimage/' || $a/@image || '" width="100" />' else '')
-}</popupContent>
-        <age>{
-string(if ($a/@date) then gkm:age($today, $a/@date) else '99999')
-}</age>
+        <gkid>{ $a/@id/string() }</gkid>
+        <age>{ string(if ($a/@date) then gkm:age($today, $a/@date) else '99999') }</age>
+        { gkm:jsonProperties($a, $today) }
       </properties>
     </_>
 }
   </features>
 </json>
 )
+};
+
+
+
+(:~
+ : Export Geokrety as geojson
+ : @param $geokret to obtain
+ : @return The geokrety found
+ :)
+declare
+function gkm:jsonProperties(
+ $a as element(geokret),
+ $today
+ ) {
+
+<popupContent>
+{
+'<h1' || (if ($a/@missing = '1') then ' class="missing"' else '') || '><a href="https://geokretymap.org/' || $a/@id || '" target="_blank">' || $a/data() || '</a></h1>' ||
+string(if ($a/@waypoint) then (if ($a/not(@state="0" or @state="3")) then 'Last seen in' else 'In') || ' <a href="https://geokrety.org/go2geo/index.php?wpt=' || $a/@waypoint || '" target="_blank">' || $a/@waypoint || '</a><br />' else '') ||
+string(if ($a/@date) then 'Last move: ' || $a/@date || '<br />' else '') ||
+'Travelled: ' || $a/@dist || ' km<br />' ||
+string(if ($a/@image) then '<img src="https://geokretymap.org/gkimage/' || $a/@image || '" width="100" />' else '')
+}
+</popupContent>
+
 };

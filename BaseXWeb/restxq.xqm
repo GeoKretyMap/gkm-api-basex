@@ -331,17 +331,17 @@ declare
 declare
   %rest:path("/geojson")
   %rest:GET
-  %rest:query-param("latTL", "{$latTL}", 45.4601)
-  %rest:query-param("lonTL", "{$lonTL}", 15.5236)
-  %rest:query-param("lonBR", "{$lonBR}", 4.6362)
-  %rest:query-param("latBR", "{$latBR}", 41.4509)
+  %rest:query-param("latTL", "{$latTL}")
+  %rest:query-param("lonTL", "{$lonTL}")
+  %rest:query-param("lonBR", "{$lonBR}")
+  %rest:query-param("latBR", "{$latBR}")
 
-  %rest:query-param("newer", "{$newer}", "false")
-  %rest:query-param("older", "{$older}", "false")
-  %rest:query-param("nodate", "{$nodate}", "false")
-  %rest:query-param("ghosts", "{$ghosts}", "false")
-  %rest:query-param("missing", "{$missing}", "false")
-  %rest:query-param("details", "{$details}", "false")
+  %rest:query-param("newer", "{$newer}")
+  %rest:query-param("older", "{$older}")
+  %rest:query-param("nodate", "{$nodate}")
+  %rest:query-param("ghosts", "{$ghosts}")
+  %rest:query-param("missing", "{$missing}")
+  %rest:query-param("details", "{$details}")
 
   %rest:query-param("daysFrom", "{$daysFrom}", 0)
   %rest:query-param("daysTo", "{$daysTo}", 2)
@@ -349,33 +349,33 @@ declare
   %rest:query-param("limit", "{$limit}", 500)
   %output:media-type('application/json')
   function page:as_geojson(
-    $latTL as xs:float?,
-    $lonTL as xs:float?,
-    $latBR as xs:float?,
-    $lonBR as xs:float?,
+    $latTL as xs:float,
+    $lonTL as xs:float,
+    $latBR as xs:float,
+    $lonBR as xs:float,
+
+    $daysFrom as xs:integer?,
+    $daysTo as xs:integer?,
+
+    $limit as xs:integer?,
 
     $newer as xs:boolean?,
     $older as xs:boolean?,
     $nodate as xs:boolean?,
     $ghosts as xs:boolean?,
     $missing as xs:boolean?,
-    $details as xs:boolean?,
-
-    $daysFrom as xs:integer?,
-    $daysTo as xs:integer?,
-
-    $limit as xs:integer?
+    $details as xs:boolean?
   ) {
   gkm:as_geojson(
     $latTL, $lonTL,
     $latBR, $lonBR,
 
-    $newer, $older, $nodate,
-    $ghosts, $missing, $details,
-
     $daysFrom, $daysTo,
 
-    $limit
+    $limit,
+
+    $newer, $older, $nodate,
+    $ghosts, $missing, $details
   )
 };
 
