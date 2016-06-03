@@ -1193,7 +1193,7 @@ function gkm:jsonProperties(
 '<h1' || (if ($a/@missing = '1') then ' class="missing"' else '') || '><a href="https://geokretymap.org/' || $a/@id || '" target="_blank">' || $a/data() || '</a></h1>' ||
 string(if ($a/@waypoint) then (if ($a/not(@state="0" or @state="3")) then 'Last seen in' else 'In') || ' <a href="https://geokrety.org/go2geo/index.php?wpt=' || $a/@waypoint || '" target="_blank">' || $a/@waypoint || '</a><br />' else '') ||
 string(if ($a/@date) then 'Last move: ' || $a/@date || '<br />' else '') ||
-'Travelled: ' || $a/@dist || ' km<br />' ||
+'Travelled: ' || $a/@dist || ' km<br />' || 'Owner: <a href="https://geokrety.org/mypage.php?userid=' || $a/@owner_id || '" target="_blank">' || $a/@ownername || '</a><br />' ||
 string(if ($a/@image) then '<img src="https://geokretymap.org/gkimage/' || $a/@image || '" width="100" />' else '')
 }
 </popupContent>
