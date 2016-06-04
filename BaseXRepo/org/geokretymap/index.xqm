@@ -1100,7 +1100,7 @@ let $today := functx:date($year, $month, $day)
 let $dateFrom := xs:string(current-date() - functx:dayTimeDuration($daysFrom, 0, 0, 0))
 let $dateTo   := xs:string(current-date() - functx:dayTimeDuration($daysTo  , 0, 0, 0))
 
-let $input   := doc("gkmem")/gkxml/geokrety/geokret[@date >= $dateTo and @missing=$missing]
+let $input   := doc("gkmem")/gkxml/geokrety/geokret[@missing=$missing]
 
 let $filter1 := if ($ownername)
                 then $input[@ownername=$ownername]
@@ -1114,7 +1114,11 @@ let $filter3 := if ($daysFrom = 0)
                 then $filter2
                 else $filter2[$dateFrom >= @date]
 
-let $result := $filter3[xs:float(@lat) <= $latTL
+let $filter4 := if ($daysTo = -1)
+                then $filter3
+                else $filter3[@date >= $dateTo]
+
+let $result := $filter4[xs:float(@lat) <= $latTL
                     and xs:float(@lon) <= $lonTL
                     and xs:float(@lat) >= $latBR
                     and xs:float(@lon) >= $lonBR]
