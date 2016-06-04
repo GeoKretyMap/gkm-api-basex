@@ -35,7 +35,7 @@ STOPPORT = 8985
 AUTHMETHOD = Basic
 
 # Local Options
-AUTOOPTIMIZE = false
+AUTOOPTIMIZE = true
 UPDINDEX = true
 TEXTINCLUDE = gk,geokret,waypoint
 ATTRINCLUDE = id,waypoint,lat,lon,latitude,longitude,missing,state,date,ownername
