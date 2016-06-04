@@ -1087,7 +1087,7 @@ function gkm:as_geojson(
  $older as xs:boolean?,
  $nodate as xs:boolean?,
  $ghosts as xs:boolean?,
- $missing as xs:boolean?,
+ $missing as xs:string?,
  $details as xs:boolean?
 
  ) {
@@ -1100,27 +1100,17 @@ let $today := functx:date($year, $month, $day)
 let $dateFrom := xs:string(current-date() - functx:dayTimeDuration($daysFrom, 0, 0, 0))
 let $dateTo   := xs:string(current-date() - functx:dayTimeDuration($daysTo  , 0, 0, 0))
 
-let $input   := doc("geokrety")/gkxml/geokrety/geokret
+let $input   := doc("geokrety")/gkxml/geokrety/geokret[@date >= $dateTo and @missing=$missing]
 
-let $filter1 := if ($missing)
-                then $input[@missing="1"]
-                else $input
+let $filter2 := if ($ghosts)
+                then $input[not(@state="0" or @state="3")]
+                else $input[    @state="0" or @state="3" ]
 
-let $filter2 := if ($nodate) then $filter1 else $filter1[@date]
+let $filter3 := if ($daysFrom = 0)
+                then $filter2
+                else $filter2[$dateFrom >= @date]
 
-let $filter3 := if ($ghosts)
-                then $filter2[not(@state="0" or @state="3")]
-                else $filter2[    @state="0" or @state="3" ]
-
-let $filter4 := if ($daysFrom = 0)
-                then $filter3
-                else $filter3[$dateFrom >= @date]
-
-let $filter5 := if ($older)
-                then $filter4
-                else $filter4[@date >= $dateTo]
-
-let $result := $filter5[xs:float(@lat) <= $latTL
+let $result := $filter3[xs:float(@lat) <= $latTL
                     and xs:float(@lon) <= $lonTL
                     and xs:float(@lat) >= $latBR
                     and xs:float(@lon) >= $lonBR]
@@ -1193,7 +1183,7 @@ function gkm:jsonProperties(
 '<h1' || (if ($a/@missing = '1') then ' class="missing"' else '') || '><a href="https://geokretymap.org/' || $a/@id || '" target="_blank">' || $a/data() || '</a></h1>' ||
 string(if ($a/@waypoint) then (if ($a/not(@state="0" or @state="3")) then 'Last seen in' else 'In') || ' <a href="https://geokrety.org/go2geo/index.php?wpt=' || $a/@waypoint || '" target="_blank">' || $a/@waypoint || '</a><br />' else '') ||
 string(if ($a/@date) then 'Last move: ' || $a/@date || '<br />' else '') ||
-'Travelled: ' || $a/@dist || ' km<br />' || 'Owner: <a href="https://geokrety.org/mypage.php?userid=' || $a/@owner_id || '" target="_blank">' || $a/@ownername || '</a><br />' ||
+'Travelled: ' || $a/@dist || ' km<br />' || (if ($a/@ownername) then 'Owner: <a href="https://geokrety.org/mypage.php?userid=' || $a/@owner_id || '" target="_blank">' || $a/@ownername || '</a><br />' else '') ||
 string(if ($a/@image) then '<img src="https://geokretymap.org/gkimage/' || $a/@image || '" width="100" />' else '')
 }
 </popupContent>

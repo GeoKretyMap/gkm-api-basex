@@ -340,11 +340,11 @@ declare
   %rest:query-param("older", "{$older}")
   %rest:query-param("nodate", "{$nodate}")
   %rest:query-param("ghosts", "{$ghosts}")
-  %rest:query-param("missing", "{$missing}")
+  %rest:query-param("missing", "{$missing}", "0")
   %rest:query-param("details", "{$details}")
 
   %rest:query-param("daysFrom", "{$daysFrom}", 0)
-  %rest:query-param("daysTo", "{$daysTo}", 2)
+  %rest:query-param("daysTo", "{$daysTo}", 45)
 
   %rest:query-param("limit", "{$limit}", 500)
   %output:media-type('application/json')
@@ -363,7 +363,7 @@ declare
     $older as xs:boolean?,
     $nodate as xs:boolean?,
     $ghosts as xs:boolean?,
-    $missing as xs:boolean?,
+    $missing as xs:string?,
     $details as xs:boolean?
   ) {
   gkm:as_geojson(

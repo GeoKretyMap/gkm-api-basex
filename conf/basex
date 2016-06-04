@@ -38,4 +38,4 @@ AUTHMETHOD = Basic
 AUTOOPTIMIZE = false
 UPDINDEX = true
 TEXTINCLUDE = gk,geokret,waypoint
-ATTRINCLUDE = id,waypoint,lat,lon,latitude,longitude
+ATTRINCLUDE = id,waypoint,lat,lon,latitude,longitude,missing,state,date,ownername
