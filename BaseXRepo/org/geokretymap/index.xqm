@@ -1085,7 +1085,7 @@ function gkm:as_geojson(
 
  $newer as xs:boolean?,
  $older as xs:boolean?,
- $nodate as xs:boolean?,
+ $ownername as xs:string?,
  $ghosts as xs:boolean?,
  $missing as xs:string?,
  $details as xs:boolean?
@@ -1102,9 +1102,13 @@ let $dateTo   := xs:string(current-date() - functx:dayTimeDuration($daysTo  , 0,
 
 let $input   := doc("geokrety")/gkxml/geokrety/geokret[@date >= $dateTo and @missing=$missing]
 
+let $filter1 := if ($ownername)
+                then $input[@ownername=$ownername]
+                else $input
+
 let $filter2 := if ($ghosts)
-                then $input[not(@state="0" or @state="3")]
-                else $input[    @state="0" or @state="3" ]
+                then $filter1[not(@state="0" or @state="3")]
+                else $filter1[    @state="0" or @state="3" ]
 
 let $filter3 := if ($daysFrom = 0)
                 then $filter2

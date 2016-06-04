@@ -338,7 +338,7 @@ declare
 
   %rest:query-param("newer", "{$newer}")
   %rest:query-param("older", "{$older}")
-  %rest:query-param("nodate", "{$nodate}")
+  %rest:query-param("ownername", "{$ownername}")
   %rest:query-param("ghosts", "{$ghosts}")
   %rest:query-param("missing", "{$missing}", "0")
   %rest:query-param("details", "{$details}")
@@ -361,7 +361,7 @@ declare
 
     $newer as xs:boolean?,
     $older as xs:boolean?,
-    $nodate as xs:boolean?,
+    $ownername as xs:string?,
     $ghosts as xs:boolean?,
     $missing as xs:string?,
     $details as xs:boolean?
@@ -374,7 +374,7 @@ declare
 
     $limit,
 
-    $newer, $older, $nodate,
+    $newer, $older, $ownername,
     $ghosts, $missing, $details
   )
 };
