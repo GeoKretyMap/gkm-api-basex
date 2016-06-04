@@ -245,7 +245,7 @@ gkm:geokrety_by_gkid($gkid as xs:string) {
 declare
 %output:cdata-section-elements("description name owner user waypoint application comment message")
 function gkm:geokrety_by_wpt($wpt as xs:string) {
-  gkm:wrap_response(doc("geokrety")/gkxml/geokrety/geokret[@waypoint = upper-case($wpt)])
+  gkm:wrap_response(doc("gkmem")/gkxml/geokrety/geokret[@waypoint = upper-case($wpt)])
 };
 
 (:~
@@ -1100,7 +1100,7 @@ let $today := functx:date($year, $month, $day)
 let $dateFrom := xs:string(current-date() - functx:dayTimeDuration($daysFrom, 0, 0, 0))
 let $dateTo   := xs:string(current-date() - functx:dayTimeDuration($daysTo  , 0, 0, 0))
 
-let $input   := doc("geokrety")/gkxml/geokrety/geokret[@date >= $dateTo and @missing=$missing]
+let $input   := doc("gkmem")/gkxml/geokrety/geokret[@date >= $dateTo and @missing=$missing]
 
 let $filter1 := if ($ownername)
                 then $input[@ownername=$ownername]
