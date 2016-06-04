@@ -324,6 +324,39 @@ declare
 
 
 (:~
+ : Launch Optimize
+ :)
+declare
+  %updating
+  %rest:path("optimize")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:optimize()
+
+{
+  db:optimize('geokrety', true()),
+  db:optimize('geokrety-details', true())
+} ;
+
+
+(:~
+ : Launch Memcopy
+ :)
+declare
+  %updating
+  %rest:path("memcopy")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:memcopy()
+
+{
+  let $geokrety := doc("geokrety")/gkxml
+  return
+    db:create("gkmem", doc("geokrety")/gkxml, "/tmp/gkmem")
+} ;
+
+
+(:~
  : Alias to get geokrety document
  : @param $gkid to lookup
  : @return The gk document
