@@ -636,7 +636,7 @@ declare
 declare
  %updating
  function gkm:create_geokrety() {
-  db:create('test-geokrety', "https://api.gkm.kumy.org/basex/export/geokrety.xml", 'geokrety')
+  db:create('geokrety', "https://api.gkm.kumy.org/basex/export/geokrety.xml", 'geokrety')
 };
 
 
@@ -646,7 +646,7 @@ declare
 declare
  %updating
  function gkm:create_geokrety_details() {
-  db:create('test-geokrety-details', "https://api.gkm.kumy.org/basex/export/geokrety.xml", 'geokrety-details')
+  db:create('geokrety-details', "https://api.gkm.kumy.org/basex/export/geokrety-details.xml", 'geokrety-details')
 };
 
 
@@ -656,7 +656,7 @@ declare
 declare
  %updating
  function gkm:create_pending_geokrety() {
-  db:create('test-pending-geokrety', <gkxml><geokrety/><errors/></gkxml>, 'pending-geokrety')
+  db:create('pending-geokrety', <gkxml><geokrety/><errors/></gkxml>, 'pending-geokrety')
 };
 
 
@@ -666,7 +666,7 @@ declare
 declare
  %updating
  function gkm:create_pending_geokrety_details() {
-  db:create('test-pending-geokrety-details', <gkxml><geokrety/><errors/></gkxml>, 'pending-geokrety-details')
+  db:create('pending-geokrety-details', <gkxml><geokrety/><errors/></gkxml>, 'pending-geokrety-details')
 };
 
 
