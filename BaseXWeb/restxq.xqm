@@ -75,7 +75,7 @@ declare
 
 {
   gkm:geokrety_by_wpt($wpt)
-} ;
+};
 
 (:~
  : Find Geokrety by gkid or waypoint
@@ -92,7 +92,7 @@ declare
 
 {
   gkm:geokrety_by_gkid_or_wpt($gkid, $wpt)
-} ;
+};
 
 (:~
  : Force Geokret to be fully refreshed
@@ -108,7 +108,7 @@ declare
 
 {
   gkm:fetch_geokrety($gkid)
-} ;
+};
 
 (:~
  : Find Geokrety details by gkid
@@ -124,7 +124,7 @@ declare
 
 {
   gkm:geokrety_details_by_gkid($gkid)
-} ;
+};
 
 (:~
  : Find Geokrety details by waypoint
@@ -140,7 +140,7 @@ declare
 
 {
   gkm:geokrety_details_by_wpt($wpt)
-} ;
+};
 
 (:~
  : Find Geokrety details by gkid or waypoint
@@ -158,7 +158,7 @@ declare
 
 {
   gkm:geokrety_details_by_gkid_or_wpt($gkid, $wpt)
-} ;
+};
 
 
 (:~
@@ -176,7 +176,7 @@ declare
 
 {
   gkm:fetch_geokrety($gkid)
-} ;
+};
 
 
 (:~
@@ -192,7 +192,7 @@ declare
 
 {
   gkm:count_pending_basic()
-} ;
+};
 
 
 (:~
@@ -208,7 +208,7 @@ declare
 
 {
   gkm:count_pending_details()
-} ;
+};
 
 
 (:~
@@ -224,7 +224,7 @@ declare
 
 {
   gkm:count_pending_details_error()
-} ;
+};
 
 
 (:~
@@ -241,7 +241,7 @@ declare
 
 {
   gkm:fetch_from_export2()
-} ;
+};
 
 
 (:~
@@ -257,7 +257,7 @@ declare
 
 {
   gkm:merge_geokrety()
-} ;
+};
 
 
 (:~
@@ -274,7 +274,7 @@ declare
 
 {
   gkm:fetch_geokrety_details_one_by_one()
-} ;
+};
 
 
 (:~
@@ -290,7 +290,7 @@ declare
 
 {
   gkm:merge_geokrety_details()
-} ;
+};
 
 
 (:~
@@ -307,7 +307,7 @@ declare
 
 {
   gkm:fetch_from_export2_date($modifiedsince)
-} ;
+};
 
 
 (:~
@@ -322,7 +322,7 @@ declare
 
 {
   db:create-backup('geokrety')
-} ;
+};
 
 
 (:~
@@ -337,7 +337,7 @@ declare
 
 {
   db:create-backup('geokrety-details')
-} ;
+};
 
 
 (:~
@@ -353,7 +353,7 @@ declare
 {
   db:optimize('geokrety', true()),
   db:optimize('geokrety-details', true())
-} ;
+};
 
 
 (:~
@@ -370,7 +370,7 @@ declare
   let $geokrety := doc("geokrety")/gkxml
   return
     db:create("gkmem", doc("geokrety")/gkxml, "/tmp/gkmem")
-} ;
+};
 
 
 (:~
@@ -385,7 +385,7 @@ declare
 
 {
   db:export("geokrety", "/srv/BaseXData/export/", map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"})
-} ;
+};
 
 
 (:~
@@ -400,7 +400,22 @@ declare
 
 {
   db:export("geokrety-details", "/srv/BaseXData/export/", map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"})
-} ;
+};
+
+
+(:~
+ : Launch export details as Geojson
+ :)
+declare
+  %updating
+  %rest:path("export/details/xml")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:export-details-xml()
+
+{
+  gkm:write_geokrety_details(doc('geokrety-details')/gkxml/geokrety/geokret)
+};
 
 
 (:~
@@ -410,24 +425,13 @@ declare
   %updating
   %rest:path("export/geojson")
   %rest:GET
-  %output:media-type('application/json')
+  %output:media-type('text/plain')
   function page:export-geojson()
 
 {
 
   file:write('/srv/BaseXData/export/geokrety.json', gkm:as_geojson(doc('geokrety')/gkxml/geokrety/geokret))
-(:
-  let $target := '/srv/BaseXData/export/'
-  
-  for $doc in db:open('DB', 'collection')
-  let $path := $target || db:path($doc)
-  return (
-    file:create-dir(file:parent($path)),
-    file:write($path, $doc)
-  )
-  db:export("geokrety-details", "/srv/BaseXData/export/", map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"})
-:)
-} ;
+};
 
 
 (:~
