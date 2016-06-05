@@ -631,6 +631,46 @@ declare
 
 
 (:~
+ : Retrieve geokrety and update database
+ :)
+declare
+ %updating
+ function gkm:create_geokrety() {
+  db:create('test-geokrety', "https://api.gkm.kumy.org/basex/export/geokrety.xml")
+};
+
+
+(:~
+ : Retrieve geokrety-details and update database
+ :)
+declare
+ %updating
+ function gkm:create_geokrety_details() {
+  db:create('test-geokrety-details', "https://api.gkm.kumy.org/basex/export/geokrety.xml")
+};
+
+
+(:~
+ : Create an initial pending-database
+ :)
+declare
+ %updating
+ function gkm:create_pending_geokrety() {
+  db:create('test-pending-geokrety', <gkxml><geokrety/><errors/></gkxml>)
+};
+
+
+(:~
+ : Create an initial pending-database details
+ :)
+declare
+ %updating
+ function gkm:create_pending_geokrety_details() {
+  db:create('test-pending-geokrety-details', <gkxml><geokrety/><errors/></gkxml>)
+};
+
+
+(:~
  : Retrieve geokrety and update pending database
  : @param $gkid to process
  :)

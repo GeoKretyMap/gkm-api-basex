@@ -9,19 +9,10 @@ RUN curl -o /usr/local/bin/gosu -fsSL "https://github.com/tianon/gosu/releases/d
 COPY conf/basex /srv/.basex
 COPY BaseXRepo/ /srv/BaseXRepo/
 COPY BaseXWeb/ /srv/BaseXWeb/
+COPY scripts/ /srv/scripts/
 RUN chown -R basex /srv/BaseXRepo/ /srv/BaseXWeb/
 
 COPY entry-point.sh /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/entry-point.sh"]
 CMD ["basexhttp", "-z"]
-
-
-
-# sample composer.yml
-#
-#  gkm-api-basex:
-#    image: geokretymap/gkm-api-basex
-#    volumes:
-#      - /srv/GKM/basex/data/BaseXRepo/:/srv/BaseXRepo/
-#
