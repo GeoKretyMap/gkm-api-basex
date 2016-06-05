@@ -5,4 +5,6 @@ import module namespace gkm = 'https://geokretymap.org';
 gkm:create_geokrety(),
 gkm:create_geokrety_details(),
 gkm:create_pending_geokrety(),
-gkm:create_pending_geokrety_details()
+gkm:create_pending_geokrety_details(),
+
+gkm:write_geokrety_details(doc('geokrety-details')/gkxml/geokrety/geokret)
