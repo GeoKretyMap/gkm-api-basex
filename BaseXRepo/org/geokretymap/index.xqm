@@ -245,7 +245,7 @@ gkm:geokrety_by_gkid($gkid as xs:string) {
 declare
 %output:cdata-section-elements("description name owner user waypoint application comment message")
 function gkm:geokrety_by_wpt($wpt as xs:string) {
-  gkm:wrap_response(doc("gkmem")/gkxml/geokrety/geokret[@waypoint = upper-case($wpt)])
+  gkm:wrap_response(doc("geokrety")/gkxml/geokrety/geokret[@waypoint = upper-case($wpt)])
 };
 
 (:~
@@ -719,7 +719,7 @@ declare
  function gkm:fetch_geokrety_details_one_by_one() {
    let $last_update := current-dateTime()
    (:for $geokret in doc("pending-geokrety")/gkxml/geokrety/geokret[not(@date)][1]:)
-   let $geokrets := subsequence(doc("pending-geokrety")/gkxml/geokrety/geokret[not(@date)], 1, 5)
+   let $geokrets := subsequence(doc("pending-geokrety")/gkxml/geokrety/geokret[not(@date)], 1, 30)
    return (
    gkm:save_last_geokrety_details_pending($last_update),
    db:output("Fetch " || count($geokrets) || " GeoKrety details"),
@@ -828,7 +828,7 @@ declare
   for $geokret in $geokrets
     return 
       file:write(
-        "/srv/BaseXData/gkfiles/" || $geokret/@id || ".xml",
+        "/srv/BaseXData/export/gkdetails/" || $geokret/@id || ".xml",
         gkm:wrap_response($geokret),
         map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"}
       )
@@ -1068,11 +1068,11 @@ function gkm:geokrety_details(
 
 (:~
  : Export Geokrety as geojson
- : @param $geokret to obtain
- : @return The geokrety found
+ : @param The filters to appy
+ : @return GeoKrety to display
  :)
 declare
-function gkm:as_geojson(
+function gkm:as_geojson_filter(
  $latTL as xs:float,
  $lonTL as xs:float,
  $latBR as xs:float,
@@ -1092,15 +1092,10 @@ function gkm:as_geojson(
 
  ) {
 
-let $year := year-from-date(current-date())
-let $month := month-from-date(current-date())
-let $day := day-from-date(current-date())
-let $today := functx:date($year, $month, $day)
-
 let $dateFrom := xs:string(current-date() - functx:dayTimeDuration($daysFrom, 0, 0, 0))
 let $dateTo   := xs:string(current-date() - functx:dayTimeDuration($daysTo  , 0, 0, 0))
 
-let $input   := doc("gkmem")/gkxml/geokrety/geokret[@missing=$missing]
+let $input   := doc("geokrety")/gkxml/geokrety/geokret[@missing=$missing]
 
 let $filter1 := if ($ownername)
                 then $input[@ownername=$ownername]
@@ -1122,6 +1117,9 @@ let $result := $filter4[xs:float(@lat) <= $latTL
                     and xs:float(@lon) <= $lonTL
                     and xs:float(@lat) >= $latBR
                     and xs:float(@lon) >= $lonBR]
+
+return
+gkm:as_geojson(subsequence($result, 1, $limit))
 
 (:
 {
@@ -1145,12 +1143,32 @@ let $result := $filter4[xs:float(@lat) <= $latTL
 }
 :)
 
-return         
+
+};
+
+
+
+(:~
+ : Export Geokrety as geojson
+ : @param The geokrety to disaply a geojson
+ : @return GeoKrety as geojson
+ :)
+declare
+function gkm:as_geojson(
+ $geokrets as element(geokret)*
+) {
+
+let $year := year-from-date(current-date())
+let $month := month-from-date(current-date())
+let $day := day-from-date(current-date())
+let $today := functx:date($year, $month, $day)
+
+return
 json:serialize(
 <json type="object">
   <type>FeatureCollection</type>
   <features type="array">
-{for $a in subsequence($result, 1, $limit)
+{for $a in $geokrets[@lat and @lon]
   return
     <_ type="object">
       <geometry type="object">

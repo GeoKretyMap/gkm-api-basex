@@ -269,6 +269,7 @@ declare
   %rest:path("fetch/details")
   %rest:GET
   %rest:single
+  %output:media-type('text/plain')
   function page:fetch_details_from_pending()
 
 {
@@ -300,6 +301,7 @@ declare
   %updating
   %rest:path("fetch/{$modifiedsince}")
   %rest:GET
+  %output:media-type('text/plain')
   function page:fetch_from_export2_date(
     $modifiedsince as xs:dateTime)
 
@@ -315,10 +317,25 @@ declare
   %updating
   %rest:path("backup")
   %rest:GET
+  %output:media-type('text/plain')
   function page:backup()
 
 {
-  db:create-backup('geokrety'),
+  db:create-backup('geokrety')
+} ;
+
+
+(:~
+ : Launch backups details
+ :)
+declare
+  %updating
+  %rest:path("backup/details")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:backup-details()
+
+{
   db:create-backup('geokrety-details')
 } ;
 
@@ -353,6 +370,63 @@ declare
   let $geokrety := doc("geokrety")/gkxml
   return
     db:create("gkmem", doc("geokrety")/gkxml, "/tmp/gkmem")
+} ;
+
+
+(:~
+ : Launch export
+ :)
+declare
+  %updating
+  %rest:path("export")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:export()
+
+{
+  db:export("geokrety", "/srv/BaseXData/export/", map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"})
+} ;
+
+
+(:~
+ : Launch export details
+ :)
+declare
+  %updating
+  %rest:path("export/details")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:export-details()
+
+{
+  db:export("geokrety-details", "/srv/BaseXData/export/", map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"})
+} ;
+
+
+(:~
+ : Launch export details as Geojson
+ :)
+declare
+  %updating
+  %rest:path("export/geojson")
+  %rest:GET
+  %output:media-type('application/json')
+  function page:export-geojson()
+
+{
+
+  file:write('/srv/BaseXData/export/geokrety.json', gkm:as_geojson(doc('geokrety')/gkxml/geokrety/geokret))
+(:
+  let $target := '/srv/BaseXData/export/'
+  
+  for $doc in db:open('DB', 'collection')
+  let $path := $target || db:path($doc)
+  return (
+    file:create-dir(file:parent($path)),
+    file:write($path, $doc)
+  )
+  db:export("geokrety-details", "/srv/BaseXData/export/", map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"})
+:)
 } ;
 
 
@@ -399,7 +473,7 @@ declare
     $missing as xs:string?,
     $details as xs:boolean?
   ) {
-  gkm:as_geojson(
+  gkm:as_geojson_filter(
     $latTL, $lonTL,
     $latBR, $lonBR,
 
