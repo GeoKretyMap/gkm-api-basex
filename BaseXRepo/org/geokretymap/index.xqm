@@ -783,7 +783,7 @@ declare
        let $geokret_details := gkm:geokrety_details($geokret)
        (: TODO: check if geokret is good :)
        let $last_move := gkm:last_move_date($geokret_details)
-       let $missing := if ($geokret_details/owner/missing = "1") then "1" else "0"
+       let $missing := $geokret_details/missing
        let $ownername := $geokret_details/owner/string()
        return (
    db:output("fetched: " || $geokret/@id || " -> " || $geokret_details/@id),
