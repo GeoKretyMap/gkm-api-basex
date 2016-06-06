@@ -417,13 +417,13 @@ declare
  function gkm:save_last_geokrety_pending(
   $datetime as xs:dateTime)
 {
-  let $update := doc('pending-geokrety')/gkxml/@update
+  let $update := doc('geokrety')/gkxml/@update
   return
     (
     if ($update) then
       replace value of node $update with $datetime
     else
-      insert node (attribute update { $datetime }) as last into doc('pending-geokrety')/gkxml
+      insert node (attribute update { $datetime }) as last into doc('geokrety')/gkxml
     )
 };
 
@@ -456,7 +456,7 @@ declare
  function gkm:get_last_geokrety_pending(
   $currentdatetime as xs:dateTime)
 {
-  let $updatelast := doc('pending-geokrety')/gkxml/@update
+  let $updatelast := doc('geokrety')/gkxml/@update
   return
     if (fn:exists($updatelast) and 
         functx:total-days-from-duration($currentdatetime - xs:dateTime($updatelast)) < 10) then
