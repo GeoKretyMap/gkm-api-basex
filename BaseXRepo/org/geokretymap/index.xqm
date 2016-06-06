@@ -544,14 +544,32 @@ declare
  :)
 declare
  %updating
- function gkm:insert_or_replace_geokrety_pending($geokrets as element(geokret)*) {
+ function gkm:insert_or_replace_geokrety_pending(
+  $geokrets as element(geokret)*
+ ) {
+  gkm:insert_or_replace_geokrety_pending($geokrets, false())
+};
+
+
+(:~
+ : Add, replace pending GK in non detailled database
+ : @param $geokrets the documents to update
+ :)
+declare
+ %updating
+ function gkm:insert_or_replace_geokrety_pending(
+  $geokrets as element(geokret)*,
+  $asfirst as xs:boolean
+ ) {
   let $date := current-date()
   for $geokret in $geokrets
     let $gkid := $geokret/@id/string()
     return (
       delete node doc("pending-geokrety")/gkxml/geokrety/geokret[@id = $gkid],
       gkm:update_date_in_geokrety($geokret, $date),
-      insert node $geokret as last into doc("pending-geokrety")/gkxml/geokrety
+      if ($asfirst)
+        then insert node $geokret as first into doc("pending-geokrety")/gkxml/geokrety
+        else insert node $geokret as last into doc("pending-geokrety")/gkxml/geokrety
     )
 };
 
