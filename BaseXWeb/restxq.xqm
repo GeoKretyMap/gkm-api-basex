@@ -434,6 +434,24 @@ declare
 };
 
 
+
+(:~
+ : Find Geokrety details by gkid
+ : @param $gkid to lookup
+ : @return The gk document
+ :)
+declare
+  %output:cdata-section-elements("description name owner user waypoint application comment message")
+  %rest:path("/gk/details/{$modifiedsince}")
+  %rest:GET
+  function page:geokrety_details_modifiedsince(
+    $modifiedsince as xs:dateTime)
+
+{
+  gkm:geokrety_details_modifiedsince($modifiedsince)
+};
+
+
 (:~
  : Alias to get geokrety document
  : @param $gkid to lookup

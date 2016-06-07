@@ -300,6 +300,19 @@ declare
     gkm:wrap_response($gkdetails)
 };
 
+(:~
+ : Find or create Geokret details since date
+ : @param $modifiedsince get updates since this date
+ : @return The geokrety-details found
+ :)
+declare
+  %output:cdata-section-elements("description name owner user waypoint application comment message")
+  function gkm:geokrety_details_modifiedsince($modifiedsince as xs:dateTime) {
+  let $gkdetails := doc("geokrety-details")/gkxml/geokrety/geokret[dateupdated >= $modifiedsince]
+  return
+    gkm:wrap_response($gkdetails)
+};
+
 
 (:
  :
@@ -382,7 +395,7 @@ declare
 declare
  function gkm:is_valid_export2_duration(
   $currentdatetime as xs:dateTime) {
-  let $modifiedsince := gkm:get_last_geokrety_pending($currentdatetime)
+  let $modifiedsince := gkm:get_last_geokrety($currentdatetime)
   let $duration := functx:total-days-from-duration($currentdatetime - xs:dateTime($modifiedsince))
 
   return
@@ -414,7 +427,7 @@ declare function gkm:nr2id
  :)
 declare
  %updating
- function gkm:save_last_geokrety_pending(
+ function gkm:save_last_geokrety(
   $datetime as xs:dateTime)
 {
   let $update := doc('geokrety')/gkxml/@update
@@ -424,6 +437,44 @@ declare
       replace value of node $update with $datetime
     else
       insert node (attribute update { $datetime }) as last into doc('geokrety')/gkxml
+    )
+};
+
+
+(:~
+ : Save last full database upgrade date
+ :)
+declare
+ %updating
+ function gkm:save_last_geokrety_pending(
+  $datetime as xs:dateTime)
+{
+  let $update := doc('pending-geokrety')/gkxml/@update
+  return
+    (
+    if ($update) then
+      replace value of node $update with $datetime
+    else
+      insert node (attribute update { $datetime }) as last into doc('pending-geokrety')/gkxml
+    )
+};
+
+
+(:~
+ : Save last full database upgrade date
+ :)
+declare
+ %updating
+ function gkm:save_last_geokrety_details(
+  $datetime as xs:dateTime)
+{
+  let $update := doc('geokrety-details')/gkxml/@update
+  return
+    (
+    if ($update) then
+      replace value of node $update with $datetime
+    else
+      insert node (attribute update { $datetime }) as last into doc('geokrety-details')/gkxml
     )
 };
 
@@ -453,7 +504,7 @@ declare
  : @return The modifiedsince value
  :)
 declare
- function gkm:get_last_geokrety_pending(
+ function gkm:get_last_geokrety(
   $currentdatetime as xs:dateTime)
 {
   let $updatelast := doc('geokrety')/gkxml/@update
@@ -463,6 +514,42 @@ declare
           xs:dateTime($updatelast)
     else
         $currentdatetime - xs:dayTimeDuration("P9DT10M")
+};
+
+
+(:~
+ : Get modifiedsince value for database
+ : @param $database to consult
+ : @return The modifiedsince value
+ :)
+declare
+ function gkm:get_last_geokrety_pending(
+  $currentdatetime as xs:dateTime)
+{
+  let $updatelast := doc('pending-geokrety')/gkxml/@update
+  return
+    if (fn:exists($updatelast) and 
+        functx:total-days-from-duration($currentdatetime - xs:dateTime($updatelast)) < 10) then
+          xs:dateTime($updatelast)
+    else
+        $currentdatetime - xs:dayTimeDuration("P9DT10M")
+};
+
+
+(:~
+ : Get last pending update date
+ : @param $database to consult
+ : @return The modifiedsince value
+ :)
+declare
+ function gkm:get_last_geokrety_details()
+{
+  let $updatelast := doc('geokrety-details')/gkxml/@update
+  return
+    if (fn:exists($updatelast)) then
+      xs:dateTime($updatelast)
+    else
+      current-dateTime() - xs:dayTimeDuration("P50D")
 };
 
 
@@ -719,7 +806,8 @@ declare
        return (
        delete node doc("geokrety")/gkxml/geokrety/geokret[@id = $geokret/@id]
      ),
-     delete node $gks
+     delete node $gks,
+     gkm:save_last_geokrety(current-dateTime())
    )
 };
 
@@ -804,8 +892,6 @@ declare
        let $missing := $geokret_details/missing
        let $ownername := $geokret_details/owner/string()
        return (
-   db:output("fetched: " || $geokret/@id || " -> " || $geokret_details/@id),
-   db:output(""),
          gkm:insert_or_replace_geokrety_details($geokret_details),
          gkm:update_date_in_geokrety($geokret, $last_move),
          gkm:update_missing_in_geokrety($geokret, $missing),
@@ -819,6 +905,33 @@ declare
    db:output("Failed to fetch: " || $geokret/@id),
    db:output("")
    )
+};
+
+
+(:~
+ : Retrieve geokrety details from master and update database
+ :)
+declare
+ %updating
+ function gkm:fetch_geokrety_details_master() {
+   try {
+     let $last_update := gkm:get_last_geokrety_details()
+     let $geokret_details := fetch:xml("https://api.gkm.kumy.org/gk/details/" || $last_update)//geokret
+     return (
+       db:output("fetched details from master: " || count($geokret_details)),
+       db:output(""),
+       insert node $geokret_details as last into doc('pending-geokrety-details')/gkxml/geokrety,
+       insert node gkm:geokrety_details_to_basic($geokret_details) as last into doc('pending-geokrety')/gkxml/geokrety
+(:
+       gkm:insert_or_replace_geokrety_details($geokret_details),
+       gkm:update_date_in_geokrety($geokret, $last_move),
+       gkm:update_missing_in_geokrety($geokret, $missing),
+       gkm:update_ownername_in_geokrety($geokret, $ownername)
+:)
+     )
+   } catch * {
+     db:output("Failed to get details from master")
+   }
 };
 
 
@@ -853,6 +966,7 @@ declare
      for $geokret in $gks
        return (
        gkm:write_geokrety_details($geokret),
+       gkm:save_last_geokrety_details(current-dateTime()),
        delete node doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
        insert node $geokret as last into doc("geokrety-details")/gkxml/geokrety,
        delete node $geokret
@@ -1012,6 +1126,35 @@ fetch:xml("https://geokrety.org/export2.php?gkid=" || $gkid)/gkxml/geokrety/geok
 
 
 (:~
+ : Contruct a geoKret from details
+ : @param $geokret details to transform
+ : @return A Geokrety basic
+ :)
+declare
+ function gkm:geokrety_details_to_basic(
+ $geokret as element(geokret)
+ ) {
+  <geokret
+   date="{ gkm:last_move_date($geokret) }"
+   missing="{ $geokret/missing/string() }"
+   ownername="{ $geokret/owner/string() }"
+   id="{ $geokret/@id }"
+   dist="{ $geokret/distancetravelled/string() }"
+   lat="{ $geokret/position/@latitude }"
+   lon="{ $geokret/position/@longitude }"
+   waypoint="{ $geokret/waypoints/waypoint[1]/string() }"
+   owner_id="{ $geokret/owner/@id }"
+   state="{ $geokret/state/string() }"
+   type="{ $geokret/type/@id }"
+   last_pos_id="{ $geokret/waypoints/waypoint[1]/@id }"
+   last_log_id="{ $geokret/moves/@last_id }"
+   image="{ $geokret/image/string() }">
+    { $geokret/name/string() }
+  </geokret>
+};
+
+
+(:~
  : Load all other pages and retrieve moves
  : @param $gkid to parse
  : @param $pages total count of pages to fetch
@@ -1102,6 +1245,7 @@ function gkm:geokrety_details(
     <description>{ $tbdetails[2]/td/text() }</description>
     { gkm:node_owner($tbinfo[1]//a) }
     <datecreated></datecreated>
+    <dateupdated>{ current-dateTime() }</dateupdated>
     <distancetravelled unit="km">{ $geokret/@dist/string() }</distancetravelled>
     <places>{ $tbinfo[4]//strong/text() }</places>
     <state>{ $geokret/@state/string() }</state>
