@@ -367,7 +367,21 @@ declare
   function page:optimize()
 
 {
-  db:optimize('geokrety', true()),
+  db:optimize('geokrety', true())
+};
+
+
+(:~
+ : Launch Optimize Details
+ :)
+declare
+  %updating
+  %rest:path("optimize/details")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:optimize-details()
+
+{
   db:optimize('geokrety-details', true())
 };
 

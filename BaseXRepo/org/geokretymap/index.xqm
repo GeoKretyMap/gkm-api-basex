@@ -813,7 +813,7 @@ declare
 declare
  %updating
  function gkm:merge_geokrety() {
-   let $gks := subsequence(doc("pending-geokrety")/gkxml/geokrety/geokret[@date], 1, 30)
+   let $gks := doc("pending-geokrety")/gkxml/geokrety/geokret[@date]
    return (
      db:output("Merging " || count($gks) || " GeoKrety"),
      db:output(""),
@@ -823,6 +823,7 @@ declare
        delete node doc("geokrety")/gkxml/geokrety/geokret[@id = $geokret/@id]
      ),
      delete node $gks,
+     db:optimize('pending-geokrety', true()),
      gkm:save_last_geokrety(current-dateTime())
    )
 };
@@ -976,14 +977,15 @@ declare
    return (
      db:output("Merging " || count($gks) || " GeoKrety details"),
      db:output(""),
+     insert node $gks as last into doc("geokrety-details")/gkxml/geokrety,
      for $geokret in $gks
        return (
-       gkm:write_geokrety_details($geokret),
-       gkm:save_last_geokrety_details(),
        delete node doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
-       insert node $geokret as last into doc("geokrety-details")/gkxml/geokrety,
-       delete node $geokret
-     )
+     ),
+     gkm:write_geokrety_details($geokret),
+     delete node $gks
+     db:optimize('pending-geokrety-details', true()),
+     gkm:save_last_geokrety_details()
    )
 };
 
