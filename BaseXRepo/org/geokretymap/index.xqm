@@ -942,7 +942,7 @@ declare
     insert node $geokret_details as last into doc('pending-geokrety-details')/gkxml/geokrety,
     insert node gkm:geokrety_details_to_basic($geokret_details) as last into doc('pending-geokrety')/gkxml/geokrety
   ) else (
-    db:output("Failed to get details from master")
+    db:output("No new geokrety since " || $last_update)
   )
 };
 
@@ -1127,8 +1127,10 @@ fetch:xml("https://geokrety.org/export2.php?gkid=" || $gkid)/gkxml/geokrety/geok
  :)
 declare
  function gkm:geokrety_details_to_basic(
- $geokret as element(geokret)
+ $geokrety as element(geokret)*
  ) {
+  for $geokret in $geokrety
+  return
   <geokret
    date="{ gkm:last_move_date($geokret) }"
    missing="{ $geokret/missing/string() }"
