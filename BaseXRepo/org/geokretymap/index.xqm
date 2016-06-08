@@ -465,16 +465,15 @@ declare
  :)
 declare
  %updating
- function gkm:save_last_geokrety_details(
-  $datetime as xs:dateTime)
+ function gkm:save_last_geokrety_details()
 {
   let $update := doc('geokrety-details')/gkxml/@update
   return
     (
     if ($update) then
-      replace value of node $update with $datetime
+      replace value of node $update with current-dateTime()
     else
-      insert node (attribute update { $datetime }) as last into doc('geokrety-details')/gkxml
+      insert node (attribute update { current-dateTime() }) as last into doc('geokrety-details')/gkxml
     )
 };
 
@@ -722,6 +721,23 @@ declare
 };
 
 
+(:~
+ : Write GK details to a file
+ : @param $geokret to write
+ :)
+declare
+ %updating
+ function gkm:write_geokrety_details($geokrets as element(geokret)*) {
+  for $geokret in $geokrets
+    return 
+      file:write(
+        "/srv/BaseXData/export/gkdetails/" || $geokret/@id || ".xml",
+        gkm:wrap_response($geokret),
+        map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"}
+      )
+};
+
+
 (:
  :
  : Update basic informations
@@ -892,6 +908,9 @@ declare
        let $missing := $geokret_details/missing
        let $ownername := $geokret_details/owner/string()
        return (
+db:output("fetched: " || $geokret/@id || " -> " || $geokret_details/@id),
+db:output(""),
+
          gkm:insert_or_replace_geokrety_details($geokret_details),
          gkm:update_date_in_geokrety($geokret, $last_move),
          gkm:update_missing_in_geokrety($geokret, $missing),
@@ -966,7 +985,7 @@ declare
      for $geokret in $gks
        return (
        gkm:write_geokrety_details($geokret),
-       gkm:save_last_geokrety_details(current-dateTime()),
+       gkm:save_last_geokrety_details(),
        delete node doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
        insert node $geokret as last into doc("geokrety-details")/gkxml/geokrety,
        delete node $geokret
@@ -987,23 +1006,6 @@ declare
       delete node doc("pending-geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
       insert node $geokret as last into doc("pending-geokrety-details")/gkxml/geokrety
     )
-};
-
-
-(:~
- : Write GK details to a file
- : @param $geokret to write
- :)
-declare
- %updating
- function gkm:write_geokrety_details($geokrets as element(geokret)*) {
-  for $geokret in $geokrets
-    return 
-      file:write(
-        "/srv/BaseXData/export/gkdetails/" || $geokret/@id || ".xml",
-        gkm:wrap_response($geokret),
-        map { "method": "xml", "cdata-section-elements": "description name owner user waypoint application comment message"}
-      )
 };
 
 (:

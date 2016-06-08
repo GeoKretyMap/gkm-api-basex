@@ -311,6 +311,22 @@ declare
 
 
 (:~
+ : update from export2 upstream datasource at specified time
+ : @return The gk document
+ :)
+declare
+  %updating
+  %rest:path("fetch/master")
+  %rest:GET
+  %output:media-type('text/plain')
+  function page:fetch_geokrety_details_master()
+
+{
+  gkm:fetch_geokrety_details_master()
+};
+
+
+(:~
  : Launch backups
  :)
 declare
