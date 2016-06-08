@@ -933,24 +933,17 @@ db:output(""),
 declare
  %updating
  function gkm:fetch_geokrety_details_master() {
-   try {
-     let $last_update := gkm:get_last_geokrety_details()
-     let $geokret_details := fetch:xml("https://api.gkm.kumy.org/gk/details/" || $last_update)//geokret
-     return (
-       db:output("fetched details from master: " || count($geokret_details)),
-       db:output(""),
-       insert node $geokret_details as last into doc('pending-geokrety-details')/gkxml/geokrety,
-       insert node gkm:geokrety_details_to_basic($geokret_details) as last into doc('pending-geokrety')/gkxml/geokrety
-(:
-       gkm:insert_or_replace_geokrety_details($geokret_details),
-       gkm:update_date_in_geokrety($geokret, $last_move),
-       gkm:update_missing_in_geokrety($geokret, $missing),
-       gkm:update_ownername_in_geokrety($geokret, $ownername)
-:)
-     )
-   } catch * {
-     db:output("Failed to get details from master")
-   }
+  let $last_update := gkm:get_last_geokrety_details()
+  let $geokret_details := fetch:xml("https://api.gkm.kumy.org/gk/details/" || $last_update)//geokret
+  return
+  if (count($geokret_details) > 0) then (
+    db:output("fetched details from master: " || count($geokret_details)),
+    db:output(""),
+    insert node $geokret_details as last into doc('pending-geokrety-details')/gkxml/geokrety,
+    insert node gkm:geokrety_details_to_basic($geokret_details) as last into doc('pending-geokrety')/gkxml/geokrety
+  ) else (
+    db:output("Failed to get details from master")
+  )
 };
 
 
