@@ -977,14 +977,16 @@ declare
    return (
      db:output("Merging " || count($gks) || " GeoKrety details"),
      db:output(""),
-     insert node $gks as last into doc("geokrety-details")/gkxml/geokrety,
-     for $geokret in $gks
-       return (
-       delete node doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id],
-     ),
-     gkm:write_geokrety_details($geokret),
-     delete node $gks
-     db:optimize('pending-geokrety-details', true()),
+     if (count($gks) > 0) then (
+       insert node $gks as last into doc("geokrety-details")/gkxml/geokrety,
+       for $geokret in $gks
+         return (
+         delete node doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id]
+       ),
+       gkm:write_geokrety_details($gks),
+       delete node $gks,
+       db:optimize('pending-geokrety-details', true())
+     ) else (),
      gkm:save_last_geokrety_details()
    )
 };
