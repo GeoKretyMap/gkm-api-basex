@@ -943,7 +943,8 @@ declare
     insert node gkm:geokrety_details_to_basic($geokret_details) as last into doc('pending-geokrety')/gkxml/geokrety
   ) else (
     db:output("No new geokrety since " || $last_update)
-  )
+  ),
+  gkm:save_last_geokrety_details()
 };
 
 
