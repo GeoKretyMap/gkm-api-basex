@@ -395,7 +395,7 @@ declare
 declare
  function gkm:is_valid_export2_duration(
   $currentdatetime as xs:dateTime) {
-  let $modifiedsince := gkm:get_last_geokrety($currentdatetime)
+  let $modifiedsince := gkm:get_last_geokrety_pending($currentdatetime)
   let $duration := functx:total-days-from-duration($currentdatetime - xs:dateTime($modifiedsince))
 
   return
@@ -835,7 +835,7 @@ declare
 declare
  %updating
  function gkm:fetch_from_export2() {
-   gkm:fetch_from_export2_date(current-dateTime())
+  gkm:fetch_from_export2_date(gkm:get_last_geokrety_pending(current-dateTime()))
 };
 
 
@@ -845,17 +845,20 @@ declare
 declare
  %updating
  function gkm:fetch_from_export2_date(
-  $currentdatetime as xs:dateTime) {
-  if (gkm:is_valid_duration(gkm:get_last_geokrety_pending($currentdatetime), 0.1)) then
-  let $date := gkm:is_valid_export2_duration($currentdatetime)
-  let $gks := fetch:xml("https://geokrety.org/export2.php?modifiedsince=" || $date, map { 'chop': true() })//geokret
+  $modifiedsince as xs:dateTime
+) {
 
-    return (
-      db:output("Fetch " || count($gks) || " GeoKrety"),
-      db:output(""),
-      gkm:insert_or_replace_geokrety_pending($gks),
-      gkm:save_last_geokrety_pending($currentdatetime)
-    )
+  if (gkm:is_valid_duration($modifiedsince, 0.1)) then
+    let $date := gkm:is_valid_export2_duration(current-dateTime())
+    let $gks := fetch:xml("https://geokrety.org/export2.php?modifiedsince=" || $date, map { 'chop': true() })//geokret
+
+      return (
+     db:output("https://geokrety.org/export2.php?modifiedsince=" || $date),
+        db:output("Fetch " || count($gks) || " GeoKrety"),
+        db:output(""),
+        gkm:insert_or_replace_geokrety_pending($gks),
+        gkm:save_last_geokrety_pending(current-dateTime())
+      )
   else ()
 };
 
