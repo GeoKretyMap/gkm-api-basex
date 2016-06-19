@@ -1176,7 +1176,7 @@ declare
     $moves,
     array:flatten(array:for-each( array:reverse( array { 1 to $pages - 1 }),
       function($i) {
-        html:parse(fetch:binary("https://api.geokretymap.org/gk/konkret.php?id=" || $gkid || "&amp;page=" || $i))//div[@id="prawo"]/div//table[@class="kretlogi"]
+        html:parse(fetch:binary("https://geokrety.org/konkret.php?id=" || $gkid || "&amp;page=" || $i))//div[@id="prawo"]/div//table[@class="kretlogi"]
       }))
 };
 
@@ -1238,7 +1238,7 @@ function gkm:geokrety_details(
 
   let $current_gk_details := doc("geokrety-details")/gkxml/geokrety/geokret[@id = $geokret/@id]
   
-  let $page := html:parse(fetch:binary("https://api.geokretymap.org/gk/konkret.php?id=" || $geokret/@id))//div[@id="prawo"]/div
+  let $page := html:parse(fetch:binary("https://geokrety.org/konkret.php?id=" || $geokret/@id))//div[@id="prawo"]/div
   let $tbinfo := $page/table[1]//tr
   let $tbdetails := $page/table[2]//tr
   let $pages_count := $page/div[2]/strong/a
