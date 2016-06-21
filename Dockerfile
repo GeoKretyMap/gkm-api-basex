@@ -21,4 +21,4 @@ RUN chown -R basex /srv/BaseXRepo/ /srv/BaseXWeb/
 COPY entry-point.sh /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/entry-point.sh"]
-CMD ["basexhttp", "-z"]
+CMD ["basexserver", "-z"]
