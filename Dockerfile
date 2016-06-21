@@ -2,6 +2,12 @@ FROM basex/basexhttp:8.4.4
 
 USER root
 
+RUN apt-get update \
+    && apt-get -y install \
+      vim \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN curl -o /usr/local/bin/gosu -fsSL "https://github.com/tianon/gosu/releases/download/1.9/gosu-$(dpkg --print-architecture)" \
     && chmod +x /usr/local/bin/gosu
 
