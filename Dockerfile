@@ -1,4 +1,4 @@
-FROM basex/basexhttp:8.4.3
+FROM basex/basexhttp:8.4.4
 
 USER root
 
