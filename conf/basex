@@ -5,7 +5,6 @@ LOGPATH = .logs
 REPOPATH = /srv/BaseXRepo
 LANG = English
 LANGKEYS = false
-GLOBALLOCK = false
 
 # Client/Server Architecture
 HOST = localhost
@@ -23,13 +22,11 @@ KEEPALIVE = 600
 PARALLEL = 8
 LOG = false
 LOGMSGMAXLEN = 1000
-ASYNCTIMEOUT = 3600
 
 # HTTP Services
 WEBPATH = /srv/BaseXWeb
 RESTPATH = 
 RESTXQPATH = 
-CACHERESTXQ = false
 HTTPLOCAL = false
 STOPPORT = 8985
 AUTHMETHOD = Basic
@@ -39,4 +36,3 @@ AUTOOPTIMIZE = true
 UPDINDEX = true
 TEXTINCLUDE = gk,geokret,waypoint
 ATTRINCLUDE = id,waypoint,lat,lon,latitude,longitude,missing,state,date,ownername
-CACHERESTXQ = true
